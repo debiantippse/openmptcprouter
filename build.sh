@@ -92,13 +92,13 @@ fi
 if [ "$OMR_OPENWRT" = "default" ]; then
 	if [ "$OMR_KERNEL" = "5.4" ]; then
 		# Use OpenWrt 21.02 for 5.4 kernel
-		_get_repo "$OMR_TARGET/source" https://github.com/openwrt/openwrt "76d90a5eaf3b7fc5bb1a1b8626db0e4e2487e876"
-		_get_repo feeds/packages https://github.com/openwrt/packages "dc5faddacba4a2d8c18ad65614a34ae9c9f24d52"
-		_get_repo feeds/luci https://github.com/openwrt/luci "b39d9bf4bb88acd3120098c3a087e47331d1d757"
+		_get_repo "$OMR_TARGET/source" https://github.com/openwrt/openwrt "f441be3921c769b732f0148f005d4f1bbace0508"
+		_get_repo feeds/packages https://github.com/openwrt/packages "3aa30ceee4fcf7b131bdc0f98658391069573e12"
+		_get_repo feeds/luci https://github.com/openwrt/luci "f28aaa35cd5c0cbbe59d8cc6a67de88ceeac382e"
 	else
-		_get_repo "$OMR_TARGET/source" https://github.com/openwrt/openwrt "585cef5f1a9c1c3aecd7d231364618e96d03ab65"
-		_get_repo feeds/packages https://github.com/openwrt/packages "e2055b5433da245e6ff8fb060d018d036499cf38"
-		_get_repo feeds/luci https://github.com/openwrt/luci "7c943a1d6bcf449019ca8a43e800e51f269bb8f6"
+		_get_repo "$OMR_TARGET/source" https://github.com/openwrt/openwrt "8a6b1a8d29cbd62f005ba20998ca9c8048ff49fc"
+		_get_repo feeds/packages https://github.com/openwrt/packages "b5132de5cf4f7d0562445cf3c65f9f1a4bcb1bbf"
+		_get_repo feeds/luci https://github.com/openwrt/luci "02398a33837d1fe8fd23d933ad7ac32025144805"
 	fi
 elif [ "$OMR_OPENWRT" = "master" ]; then
 	_get_repo "$OMR_TARGET/source" https://github.com/openwrt/openwrt "master"
@@ -225,7 +225,7 @@ if [ "$OMR_PACKAGES" = "mini" ]; then
 	echo "CONFIG_PACKAGE_${OMR_DIST}-mini=y" >> "$OMR_TARGET/source/.config"
 fi
 
-if [ "$SHORTCUT_FE" = "yes" ] && [ "$OMR_KERNEL" != "5.14" ]; then
+if [ "$SHORTCUT_FE" = "yes" ] && [ "$OMR_KERNEL" = "5.4" ]; then
 	echo "# CONFIG_PACKAGE_kmod-fast-classifier is not set" >> "$OMR_TARGET/source/.config"
 	echo "CONFIG_PACKAGE_kmod-fast-classifier-noload=y" >> "$OMR_TARGET/source/.config"
 	echo "CONFIG_PACKAGE_kmod-shortcut-fe-cm=y" >> "$OMR_TARGET/source/.config"
@@ -236,7 +236,7 @@ else
 	echo "# CONFIG_PACKAGE_kmod-shortcut-fe-cm is not set" >> "$OMR_TARGET/source/.config"
 	echo "# CONFIG_PACKAGE_kmod-shortcut-fe is not set" >> "$OMR_TARGET/source/.config"
 fi
-if [ "$OMR_KERNEL" = "5.14" ] && [ "$OMR_TARGET" != "x86_64" ] && [ "$OMR_TARGET" != "x86" ]; then
+if [ "$OMR_KERNEL" != "5.4" ] && [ "$OMR_TARGET" != "x86_64" ] && [ "$OMR_TARGET" != "x86" ]; then
 	echo "# CONFIG_PACKAGE_kmod-r8125 is not set" >> "$OMR_TARGET/source/.config"
 	echo "# CONFIG_PACKAGE_kmod-r8168 is not set" >> "$OMR_TARGET/source/.config"
 fi
@@ -377,7 +377,7 @@ echo "Done"
 #echo "Done"
 
 # Add BBR2 patch, only working on 64bits images for now
-if [ "$OMR_KERNEL" != "5.14" ] && ([ "$OMR_TARGET" = "x86_64" ] || [ "$OMR_TARGET" = "bpi-r64" ] || [ "$OMR_TARGET" = "rpi4" ] || [ "$OMR_TARGET" = "espressobin" ] || [ "$OMR_TARGET" = "r2s" ] || [ "$OMR_TARGET" = "r4s" ] || [ "$OMR_TARGET" = "rpi3" ]); then
+if [ "$OMR_KERNEL" = "5.4" ] && ([ "$OMR_TARGET" = "x86_64" ] || [ "$OMR_TARGET" = "bpi-r64" ] || [ "$OMR_TARGET" = "rpi4" ] || [ "$OMR_TARGET" = "espressobin" ] || [ "$OMR_TARGET" = "r2s" ] || [ "$OMR_TARGET" = "r4s" ] || [ "$OMR_TARGET" = "rpi3" ]); then
 	echo "Checking if BBRv2 patch is set or not"
 	if ! patch -Rf -N -p1 -s --dry-run < ../../patches/bbr2.patch; then
 		echo "apply..."
@@ -517,6 +517,7 @@ if [ "$OMR_KERNEL" = "5.4" ]; then
 	if [ -f target/linux/mvebu/patches-5.4/022-arm64-dts-marvell-armada-37xx-Move-PCIe-max-link-spe.patch ]; then
 		rm -f target/linux/mvebu/patches-5.4/022-arm64-dts-marvell-armada-37xx-Move-PCIe-max-link-spe.patch
 	fi
+	echo "CONFIG_VERSION_CODE=5.4" >> ".config"
 fi
 if [ "$OMR_KERNEL" = "5.10" ]; then
 	echo "Set to kernel 5.10 for rpi arch"
@@ -537,6 +538,7 @@ if [ "$OMR_KERNEL" = "5.14" ]; then
 	echo "Set to kernel 5.14 for rpi arch"
 	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.14%g' {} \;
 	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER=5.10%KERNEL_PATCHVER:=5.14%g' {} \;
+	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER=5.4%KERNEL_PATCHVER:=5.14%g' {} \;
 	echo "Done"
 	echo "Set to kernel 5.14 for x86 arch"
 	find target/linux/x86 -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.14%g' {} \;
@@ -554,6 +556,9 @@ if [ "$OMR_KERNEL" = "5.14" ]; then
 	echo "Set to kernel 5.14 for ramips"
 	find target/linux/ramips -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.4%KERNEL_PATCHVER:=5.14%g' {} \;
 	echo "Done"
+	echo "Set to kernel 5.14 for ramips"
+	find target/linux/ipq806x -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.14%g' {} \;
+	echo "Done"
 	#rm -rf target/linux/generic/files/drivers/net/phy/b53
 	rm -f target/linux/bcm27xx/modules/sound.mk
 	echo "CONFIG_DEVEL=y" >> ".config"
@@ -562,6 +567,46 @@ if [ "$OMR_KERNEL" = "5.14" ]; then
 	echo 'CONFIG_BINUTILS_VERSION_2_36_1=y' >> ".config"
 	echo 'CONFIG_BINUTILS_VERSION="2.36.1' >> ".config"
 	echo "CONFIG_BINUTILS_USE_VERSION_2_36_1=y" >> ".config"
+	echo "CONFIG_VERSION_CODE=5.14" >> ".config"
+	#echo "CONFIG_GCC_USE_VERSION_10=y" >> ".config"
+	if [ "$TARGET" = "bpi-r2" ]; then
+		echo "# CONFIG_VERSION_CODE_FILENAMES is not set" >> ".config"
+	fi
+fi
+if [ "$OMR_KERNEL" = "5.15" ]; then
+	echo "Set to kernel 5.15 for rpi arch"
+	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	find target/linux/bcm27xx -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER=5.4%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for x86 arch"
+	find target/linux/x86 -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for mvebu arch (WRT)"
+	find target/linux/mvebu -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for mediatek arch (BPI-R2)"
+	find target/linux/mediatek -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	find target/linux/mediatek -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.4%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for rockchip arch (R2S/R4S)"
+	find target/linux/rockchip -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER=5.4%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for ramips"
+	find target/linux/ramips -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.4%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	echo "Set to kernel 5.15 for ramips"
+	find target/linux/ipq806x -type f -name Makefile -exec sed -i 's%KERNEL_PATCHVER:=5.10%KERNEL_PATCHVER:=5.15%g' {} \;
+	echo "Done"
+	#rm -rf target/linux/generic/files/drivers/net/phy/b53
+	rm -f target/linux/bcm27xx/modules/sound.mk
+	echo "CONFIG_DEVEL=y" >> ".config"
+	echo "CONFIG_NEED_TOOLCHAIN=y" >> ".config"
+	echo "CONFIG_TOOLCHAINOPTS=y" >> ".config"
+	echo 'CONFIG_BINUTILS_VERSION_2_36_1=y' >> ".config"
+	echo 'CONFIG_BINUTILS_VERSION="2.36.1' >> ".config"
+	echo "CONFIG_BINUTILS_USE_VERSION_2_36_1=y" >> ".config"
+	echo "CONFIG_VERSION_CODE=5.15" >> ".config"
 	#echo "CONFIG_GCC_USE_VERSION_10=y" >> ".config"
 	if [ "$TARGET" = "bpi-r2" ]; then
 		echo "# CONFIG_VERSION_CODE_FILENAMES is not set" >> ".config"
